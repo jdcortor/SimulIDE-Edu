@@ -78,8 +78,10 @@
         <file alias="reset.svg">../src/icons/mainwindow/reset.svg</file>
         <file alias="stop.svg">../src/icons/mainwindow/stop.svg</file>
         
-        <file alias="poweroff.png">../src/icons/mainwindow/poweroff.png</file>
-        <file alias="poweron.png">../src/icons/mainwindow/poweron.png</file>
+        <file alias="poweroff.png">../src/icons/mainwindow/poweroff.svg</file>
+        <file alias="poweroff.svg">../src/icons/mainwindow/poweroff.svg</file>
+        <file alias="poweron.png">../src/icons/mainwindow/poweron.svg</file>
+        <file alias="poweron.svg">../src/icons/mainwindow/poweron.svg</file>
         <file alias="powerdeb.png">../src/icons/mainwindow/powerdeb.png</file>
         <file alias="pausesim.png">../src/icons/mainwindow/pausesim.png</file>
         <file alias="simpaused.png">../src/icons/mainwindow/simpaused.png</file>

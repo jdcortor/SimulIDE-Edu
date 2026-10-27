@@ -1,82 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Created with Inkscape (http://www.inkscape.org/) -->
-
-<svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="22"
-   height="22"
-   id="svg6662"
-   version="1.1"
-   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
-   sodipodi:docname="new.svg">
-  <defs
-     id="defs6664">
-    <linearGradient
-       y2="11.02436"
-       y1="3.0069399"
-       x2="0"
-       id="linearGradient1022-8-8-3-0-06-6"
-       gradientUnits="userSpaceOnUse">
-      <stop
-         id="stop3001-0-9-4-9-3"
-         offset="0" />
-      <stop
-         id="stop3003-5-6-6-5-61"
-         stop-color="#363636"
-         offset="1" />
-    </linearGradient>
-  </defs>
-  <sodipodi:namedview
-     id="base"
-     pagecolor="#ffffff"
-     bordercolor="#666666"
-     borderopacity="1.0"
-     inkscape:pageopacity="0.0"
-     inkscape:pageshadow="2"
-     inkscape:zoom="22.4"
-     inkscape:cx="8.9429225"
-     inkscape:cy="5.9737022"
-     inkscape:document-units="px"
-     inkscape:current-layer="capa1"
-     showgrid="false"
-     inkscape:showpageshadow="false"
-     inkscape:window-width="1920"
-     inkscape:window-height="1019"
-     inkscape:window-x="0"
-     inkscape:window-y="0"
-     inkscape:window-maximized="1" />
-  <metadata
-     id="metadata6667">
-    <rdf:RDF>
-      <cc:Work
-         rdf:about="">
-        <dc:format>image/svg+xml</dc:format>
-        <dc:type
-           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
-      </cc:Work>
-    </rdf:RDF>
-  </metadata>
-  <g
-     inkscape:label="Capa 1"
-     inkscape:groupmode="layer"
-     id="capa1"
-     transform="translate(0,-1030.3622)">
-    <path
-       inkscape:connector-curvature="0"
-       id="path6613"
-       d="m 17.00003,1033.3622 0,3 -3,0 0,2 3,0 0,3 2,0 0,-3 3,0 0,-2 -3,0 0,-3 -2,0 z m -13,4 -2,2 0,11 2,2 14,0 2,-2 0,-9 -2,2 0,7 -14,0 0,-11 6,0 2,2 4,0 -2,-2 -1,0 -2,-2 -7,0 z"
-       style="color:#000000;display:inline;overflow:visible;visibility:visible;opacity:0.6;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1;marker:none;enable-background:accumulate" />
-    <path
-       style="color:#000000;display:inline;overflow:visible;visibility:visible;opacity:0.7;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1;marker:none;enable-background:accumulate"
-       d="m 17.00003,1032.3615 0,3 -3,0 0,2 3,0 0,3 2,0 0,-3 3,0 0,-2 -3,0 0,-3 -2,0 z m -13,4 -2,2 0,11 2,2 14,0 2,-2 0,-9 -2,2 0,7 -14,0 0,-11 6,0 2,2 4,0 -2,-2 -1,0 -2,-2 -7,0 z"
-       id="path5959"
-       inkscape:connector-curvature="0" />
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14" id="New-File--Streamline-Core">
+  <desc>
+    New File Streamline Icon: https://streamlinehq.com
+  </desc>
+  <g id="new-file--empty-common-file-content">
+    <path id="Vector" fill="#ff7972" d="M12.375 12.375c0 0.2652 -0.1054 0.5196 -0.2929 0.7071s-0.4419 0.2929 -0.7071 0.2929h-8.75c-0.26522 0 -0.51957 -0.1054 -0.70711 -0.2929 -0.18753 -0.1875 -0.29289 -0.4419 -0.29289 -0.7071V1.625c0 -0.26522 0.10536 -0.51957 0.29289 -0.707107C2.10543 0.730357 2.35978 0.625 2.625 0.625H9L12.375 4v8.375Z" stroke-width="1"></path>
+    <path id="Union" fill="#0c098c" fill-rule="evenodd" d="M2.625 1.25c-0.09946 0 -0.19484 0.03951 -0.26517 0.10983 -0.07032 0.07033 -0.10983 0.16571 -0.10983 0.26517v10.75c0 0.0995 0.03951 0.1948 0.10983 0.2652 0.07033 0.0703 0.16571 0.1098 0.26517 0.1098h8.75c0.0995 0 0.1948 -0.0395 0.2652 -0.1098 0.0703 -0.0704 0.1098 -0.1657 0.1098 -0.2652V5H8.5c-0.27614 0 -0.5 -0.22386 -0.5 -0.5V1.25H2.625ZM13 12.375V4c0 -0.16576 -0.0658 -0.32473 -0.1831 -0.44194L9.44194 0.183058C9.32473 0.0658481 9.16576 0 9 0H2.625c-0.43098 0 -0.8443 0.171205 -1.14905 0.475951C1.1712 0.780698 1 1.19402 1 1.625v10.75c0 0.431 0.1712 0.8443 0.47595 1.149 0.30475 0.3048 0.71807 0.476 1.14905 0.476h8.75c0.431 0 0.8443 -0.1712 1.149 -0.476 0.3048 -0.3047 0.476 -0.718 0.476 -1.149Z" clip-rule="evenodd" stroke-width="1"></path>
   </g>
 </svg>

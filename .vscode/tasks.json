@@ -1,0 +1,34 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Compilar SimulIDE Completo",
+            "type": "shell",
+            "command": "qmake SimulIDE_Build.pro && make -j4",
+            "options": {
+                "cwd": "${workspaceFolder}/build_XX",
+                "env": {
+                    "PATH": "C:\\msys64\\mingw64\\bin;C:\\msys64\\usr\\bin;C:\\Windows\\system32;C:\\Windows;C:\\Windows\\System32\\WindowsPowerShell\\v1.0;${env:PATH}"
+                }
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "Probar Sandbox (Matematica Resistor)",
+            "type": "shell",
+            "command": "g++ -std=c++17 test_math.cpp -o test_math.exe && .\\test_math.exe",
+            "options": {
+                "cwd": "${workspaceFolder}/sandbox",
+                "env": {
+                    "PATH": "C:\\msys64\\mingw64\\bin;C:\\msys64\\usr\\bin;C:\\Windows\\system32;C:\\Windows;C:\\Windows\\System32\\WindowsPowerShell\\v1.0;${env:PATH}"
+                }
+            },
+            "group": "test",
+            "problemMatcher": ["$gcc"]
+        }
+    ]
+}

@@ -146,7 +146,7 @@ DEFINES += APP_VERSION=\\\"$$VERSION-$$RELEASE\\\"
 DEFINES += BUILDDATE=\\\"$$BUILD_DATE\\\"
 
 TARGET_NAME   = SimulIDE_$$VERSION-$$RELEASE
-TARGET_PREFIX = $$BUILD_DIR/executables/$$TARGET_NAME
+TARGET_PREFIX = $$PWD/Compilaciones
 
 OBJECTS_DIR *= $$OUT_PWD/build/objects
 MOC_DIR     *= $$OUT_PWD/build/moc

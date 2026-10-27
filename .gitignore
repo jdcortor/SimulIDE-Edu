@@ -1,1 +1,20 @@
 resources/qm/*.*
+
+# Build directories
+build_XX/build/
+build_XX/release/
+build_XX/debug/
+build_XX/executables/
+build_XX/Makefile*
+build_XX/object_script.*
+build_XX/ui_*.h
+build_XX/simulide_resource.rc
+build_XX/.qmake.stash
+
+# Standalone build output
+Compilaciones/
+
+# Binaries
+*.exe
+*.o
+*.a
