@@ -9,8 +9,6 @@
 #include <QPainterPath>
 #include <QLinearGradient>
 #include <QRadialGradient>
-#include <QFont>
-#include <QFontMetrics>
 
 #include "resistor.h"
 #include "itemlibrary.h"
@@ -30,7 +28,7 @@ Component* Resistor::construct( QString type, QString id )
 LibraryItem* Resistor::libraryItem()
 {
     return new LibraryItem(
-        tr("Resistor"),
+        tr("Carbon Resistor"),
         "Resistors",
         "resistor.png",
         "Resistor",
@@ -72,14 +70,9 @@ Resistor::Resistor( QString type, QString id )
 
     updateDimensions();
     updateBands();
-
-    if( Simulator::self() ) Simulator::self()->addToUpdateList( this );
 }
 
-Resistor::~Resistor()
-{
-    if( Simulator::self() ) Simulator::self()->remFromUpdateList( this );
-}
+Resistor::~Resistor(){}
 
 void Resistor::slotProperties()
 {
@@ -91,27 +84,9 @@ void Resistor::slotProperties()
     }
 }
 
-void Resistor::updateStep()
-{
-    if( m_isBurnt ) return;
-    if( !Simulator::self() || !Simulator::self()->isRunning() ) return;
-    if( !m_pin[0] || !m_pin[1] ) return;
-    if( !m_pin[0]->isConnected() || !m_pin[1]->isConnected() ) return;
-
-    double volt = std::abs( m_pin[0]->getVoltage() - m_pin[1]->getVoltage() );
-    double power = volt * volt * m_admit;
-
-    if( m_powerRating > 0.0 && power > m_powerRating )
-    {
-        qDebug() << "Resistor" << m_id << "burned out! Power:" << power << "W > Rated:" << m_powerRating << "W";
-        burnOut();
-    }
-}
-
 void Resistor::setResistance( double resist )
 {
     eResistor::setResistance( resist );
-    if( m_isBurnt ) setIsBurnt( false );
     updateBands();
     update();
 }
@@ -120,7 +95,6 @@ void Resistor::setPowerRating( double p )
 {
     if( p <= 0.0 ) p = 0.125;
     eResistor::setPowerRating( p );
-    if( m_isBurnt ) setIsBurnt( false );
     updateDimensions();
     update();
 }
@@ -216,21 +190,6 @@ void Resistor::setRealistic( bool r )
     update();
 }
 
-void Resistor::setIsBurnt( bool b )
-{
-    prepareGeometryChange();
-    eResistor::setIsBurnt( b );
-    updateDimensions();
-    update();
-}
-
-void Resistor::onBurned()
-{
-    prepareGeometryChange();
-    updateDimensions();
-    update();
-}
-
 QColor Resistor::colorForDigit( int d )
 {
     switch( d ) {
@@ -263,48 +222,64 @@ QColor Resistor::colorForTolerance( double tol )
     if( std::abs( tol - 0.5 ) < 0.15 )  return QColor( 35, 145, 35 );  // Green (0.5%)
     if( std::abs( tol - 1.0 ) < 0.25 )  return QColor( 139, 69, 19 );  // Brown (1%)
     if( std::abs( tol - 2.0 ) < 0.25 )  return QColor( 210, 25, 25 );  // Red (2%)
-    if( std::abs( tol - 10.0 ) < 1.5 )  return QColor( 192, 192, 192 ); // Silver (10%)
-    if( std::abs( tol - 20.0 ) < 2.0 )  return QColor( 0, 0, 0, 0 );    // No band (20%)
-    return QColor( 212, 175, 55 ); // Default Gold (5%)
+    if( std::abs( tol - 5.0 ) < 1.0 )   return QColor( 212, 175, 55 );  // Gold (5%)
+    if( std::abs( tol - 10.0 ) < 2.0 )  return QColor( 192, 192, 192 ); // Silver (10%)
+    return QColor( 0, 0, 0, 0 );                                       // 20%: None
 }
 
 QColor Resistor::colorForTcr( int tcr )
 {
     switch( tcr ) {
-        case 100: return QColor( 139, 69, 19 );  // Brown (100 ppm)
-        case 50:  return QColor( 210, 25, 25 );  // Red (50 ppm)
-        case 15:  return QColor( 255, 120, 0 );  // Orange (15 ppm)
-        case 25:  return QColor( 245, 210, 0 );  // Yellow (25 ppm)
-        case 10:  return QColor( 30, 130, 235 ); // Blue (10 ppm)
-        case 5:   return QColor( 145, 25, 195 ); // Violet (5 ppm)
+        case 100: return QColor( 139, 69, 19 );  // Brown (100 ppm/K)
+        case 50:  return QColor( 210, 25, 25 );  // Red (50 ppm/K)
+        case 25:  return QColor( 245, 210, 0 );  // Yellow (25 ppm/K)
+        case 15:  return QColor( 255, 120, 0 );  // Orange (15 ppm/K)
+        case 10:  return QColor( 30, 130, 235 ); // Blue (10 ppm/K)
+        case 5:   return QColor( 145, 25, 195 ); // Violet (5 ppm/K)
         default:  return QColor( 139, 69, 19 );
     }
 }
 
 void Resistor::updateBands()
 {
-    double R = m_nominalResistance;
-    if( R <= 0.0 ) R = 1.0;
-
     m_bandColors.clear();
+    double R = m_nominalResistance;
+    if( R <= 0.0 ) R = 1e-3;
 
-    if( m_bands >= 5 ) // 5 or 6 bands (3 significant digits)
+    int exponent = static_cast<int>( std::floor( std::log10( R ) ) );
+
+    if( m_bands == 4 )
     {
-        double exp = std::floor( std::log10( R ) );
-        double mantissa = R / std::pow( 10.0, exp );
-        double val = std::round( mantissa * 100.0 );
-        int exp_adj = (int)exp - 2;
-        if( val >= 1000.0 ) { val /= 10.0; exp_adj += 1; }
-        int ival = (int)val;
-        int b1 = ival / 100;
-        int b2 = (ival / 10) % 10;
-        int b3 = ival % 10;
-        int mult = exp_adj;
+        int multiplierExp = exponent - 1;
+        double normalized = R / std::pow( 10.0, multiplierExp );
+        int rounded = static_cast<int>( std::round( normalized ) );
+        if( rounded >= 100 ) { rounded /= 10; multiplierExp++; }
+        if( rounded < 10 ) rounded = 10;
 
-        m_bandColors.push_back( colorForDigit( b1 ) );
-        m_bandColors.push_back( colorForDigit( b2 ) );
-        m_bandColors.push_back( colorForDigit( b3 ) );
-        m_bandColors.push_back( colorForMultiplier( mult ) );
+        int d1 = (rounded / 10) % 10;
+        int d2 = rounded % 10;
+
+        m_bandColors.push_back( colorForDigit( d1 ) );
+        m_bandColors.push_back( colorForDigit( d2 ) );
+        m_bandColors.push_back( colorForMultiplier( multiplierExp ) );
+        m_bandColors.push_back( colorForTolerance( m_tolerance ) );
+    }
+    else // 5 or 6 bands (EIA-96 standard: 3 significant digits)
+    {
+        int multiplierExp = exponent - 2;
+        double normalized = R / std::pow( 10.0, multiplierExp );
+        int rounded = static_cast<int>( std::round( normalized ) );
+        if( rounded >= 1000 ) { rounded /= 10; multiplierExp++; }
+        if( rounded < 100 ) rounded = 100;
+
+        int d1 = (rounded / 100) % 10;
+        int d2 = (rounded / 10) % 10;
+        int d3 = rounded % 10;
+
+        m_bandColors.push_back( colorForDigit( d1 ) );
+        m_bandColors.push_back( colorForDigit( d2 ) );
+        m_bandColors.push_back( colorForDigit( d3 ) );
+        m_bandColors.push_back( colorForMultiplier( multiplierExp ) );
         m_bandColors.push_back( colorForTolerance( m_tolerance ) );
 
         if( m_bands == 6 )
@@ -312,28 +287,13 @@ void Resistor::updateBands()
             m_bandColors.push_back( colorForTcr( m_tcr ) );
         }
     }
-    else // 4 bands (2 significant digits)
-    {
-        double exp = std::floor( std::log10( R ) );
-        double mantissa = R / std::pow( 10.0, exp );
-        double val = std::round( mantissa * 10.0 );
-        int exp_adj = (int)exp - 1;
-        if( val >= 100.0 ) { val /= 10.0; exp_adj += 1; }
-        int ival = (int)val;
-        int b1 = ival / 10;
-        int b2 = ival % 10;
-        int mult = exp_adj;
-
-        m_bandColors.push_back( colorForDigit( b1 ) );
-        m_bandColors.push_back( colorForDigit( b2 ) );
-        m_bandColors.push_back( colorForMultiplier( mult ) );
-        m_bandColors.push_back( colorForTolerance( m_tolerance ) );
-    }
 }
 
 void Resistor::updateDimensions()
 {
-    if( !m_realistic )
+    prepareGeometryChange();
+
+    if( !m_realistic || m_ansiSymbol )
     {
         m_area = QRectF( -11, -4.5, 22, 9 );
         if( m_pin[0] && m_pin[1] )
@@ -354,15 +314,7 @@ void Resistor::updateDimensions()
     double halfL = m_bodyLength / 2.0;
     double rCap  = m_bodyRadius * 1.25;
 
-    if( m_isBurnt )
-    {
-        // Expand bounding area to encompass the warning banner above
-        m_area = QRectF( -125.0, -38.0, 250.0, 42.0 + rCap * 2.0 );
-    }
-    else
-    {
-        m_area = QRectF( -halfL - 2, -rCap - 2, m_bodyLength + 4, rCap * 2 + 4 );
-    }
+    m_area = QRectF( -halfL - 2, -rCap - 2, m_bodyLength + 4, rCap * 2 + 4 );
 
     // Adjust lead pins to meet the body ends seamlessly
     if( m_pin[0] && m_pin[1] )
@@ -396,91 +348,61 @@ void Resistor::drawRealistic( QPainter* p )
 
     // 2. Build contoured axial body path (curved dogbone shoulders)
     QPainterPath bodyPath;
-    double x0 = -halfL;
-    double x1 =  halfL;
-
-    bodyPath.moveTo( x0 + capW, -rCap );
-    bodyPath.quadTo( x0, -rCap, x0, 0.0 );
-    bodyPath.quadTo( x0,  rCap, x0 + capW,  rCap );
-    bodyPath.lineTo( x0 + capW * 1.35,  R );
-    bodyPath.lineTo( x1 - capW * 1.35,  R );
-    bodyPath.lineTo( x1 - capW,  rCap );
-    bodyPath.quadTo( x1,  rCap, x1, 0.0 );
-    bodyPath.quadTo( x1, -rCap, x1 - capW, -rCap );
-    bodyPath.lineTo( x1 - capW * 1.35, -R );
-    bodyPath.lineTo( x0 + capW * 1.35, -R );
+    bodyPath.moveTo( -halfL, -R );
+    bodyPath.quadTo( -halfL + capW*0.5, -rCap, -halfL + capW, -rCap );
+    bodyPath.quadTo( -halfL + capW*1.4, -R,    0.0,            -R );
+    bodyPath.quadTo(  halfL - capW*1.4, -R,     halfL - capW, -rCap );
+    bodyPath.quadTo(  halfL - capW*0.5, -rCap,  halfL,        -R );
+    bodyPath.lineTo(  halfL,  R );
+    bodyPath.quadTo(  halfL - capW*0.5,  rCap,  halfL - capW,  rCap );
+    bodyPath.quadTo(  halfL - capW*1.4,  R,     0.0,            R );
+    bodyPath.quadTo( -halfL + capW*1.4,  R,    -halfL + capW,  rCap );
+    bodyPath.quadTo( -halfL + capW*0.5,  rCap, -halfL,         R );
     bodyPath.closeSubpath();
 
-    // 3. 3D Cylindrical lighting gradient for the body
+    // 3. Realistic cylindrical shading gradient
+    QColor baseColor( 218, 188, 142 ); // Warm ceramic beige for standard 4-band carbon film
+    if( m_bands >= 5 )
+    {
+        baseColor = QColor( 120, 140, 215 ); // Precision metal film light blue
+    }
+
     QLinearGradient bodyGrad( 0.0, -rCap, 0.0, rCap );
-    if( m_isBurnt )
-    {
-        bodyGrad.setColorAt( 0.0,  QColor( 55, 45, 40 ) );
-        bodyGrad.setColorAt( 0.25, QColor( 30, 25, 22 ) );
-        bodyGrad.setColorAt( 0.65, QColor( 18, 15, 13 ) );
-        bodyGrad.setColorAt( 1.0,  QColor( 35, 28, 24 ) );
-    }
-    else
-    {
-        // 4 Bands: Tan/cream (Carbon film)
-        // 5 Bands: Sky blue (Metal film)
-        // 6 Bands: Indigo-blue (High precision film)
-        QColor base;
-        if( m_bands == 6 )      base = QColor( 120, 140, 215 );
-        else if( m_bands == 5 ) base = QColor( 135, 195, 245 );
-        else                    base = QColor( 225, 202, 160 );
+    bodyGrad.setColorAt( 0.0,  baseColor.lighter( 155 ) ); // Upper specular highlight
+    bodyGrad.setColorAt( 0.22, baseColor.lighter( 115 ) );
+    bodyGrad.setColorAt( 0.55, baseColor );
+    bodyGrad.setColorAt( 0.85, baseColor.darker( 135 ) );
+    bodyGrad.setColorAt( 1.0,  baseColor.darker( 170 ) ); // Lower shadow
 
-        bodyGrad.setColorAt( 0.0,  base.lighter( 145 ) );
-        bodyGrad.setColorAt( 0.25, base.lighter( 115 ) );
-        bodyGrad.setColorAt( 0.65, base );
-        bodyGrad.setColorAt( 1.0,  base.darker( 150 ) );
-    }
-
-    QColor outlineColor = m_isBurnt ? QColor( 20, 15, 12 ) : QColor( 120, 100, 75 );
     p->setBrush( bodyGrad );
-    p->setPen( QPen( outlineColor, 0.8 ) );
+    p->setPen( QPen( baseColor.darker( 180 ), 0.6 ) );
     p->drawPath( bodyPath );
 
-    // 4. Draw color bands clipped inside the contoured body
+    // 4. Color Bands (clipped inside body path)
     p->save();
     p->setClipPath( bodyPath );
 
-    double bandW = (m_bands == 6) ? (L * 0.070) : (L * 0.085);
-    if( bandW < 1.4 ) bandW = 1.4;
-
+    size_t count = m_bandColors.size();
+    double bandW = (L < 18.0) ? 1.5 : 2.1;
     std::vector<double> bandX;
-    if( m_bands == 6 )
+
+    if( count == 4 )
     {
-        bandX.push_back( x0 + L * 0.17 );
-        bandX.push_back( x0 + L * 0.30 );
-        bandX.push_back( x0 + L * 0.43 );
-        bandX.push_back( x0 + L * 0.56 );
-        bandX.push_back( x1 - L * 0.26 ); // Tolerance
-        bandX.push_back( x1 - L * 0.13 ); // TCR (6th band)
+        bandX = { -halfL + capW * 0.75, -L * 0.12, L * 0.08, halfL - capW * 0.75 };
     }
-    else if( m_bands == 5 )
+    else if( count == 5 )
     {
-        bandX.push_back( x0 + L * 0.20 );
-        bandX.push_back( x0 + L * 0.35 );
-        bandX.push_back( x0 + L * 0.50 );
-        bandX.push_back( x0 + L * 0.65 );
-        bandX.push_back( x1 - L * 0.20 ); // Tolerance band
+        bandX = { -halfL + capW * 0.75, -L * 0.18, -L * 0.02, L * 0.14, halfL - capW * 0.75 };
     }
-    else // 4 bands
+    else if( count == 6 )
     {
-        bandX.push_back( x0 + L * 0.22 );
-        bandX.push_back( x0 + L * 0.40 );
-        bandX.push_back( x0 + L * 0.58 );
-        bandX.push_back( x1 - L * 0.22 ); // Tolerance band
+        bandX = { -halfL + capW * 0.75, -L * 0.22, -L * 0.08, L * 0.06, L * 0.20, halfL - capW * 0.75 };
     }
 
-    size_t count = std::min( m_bandColors.size(), bandX.size() );
     for( size_t i = 0; i < count; ++i )
     {
         QColor c = m_bandColors[i];
         if( c.alpha() == 0 ) continue; // e.g. 20% no band
-
-        if( m_isBurnt ) c = c.darker( 300 ); // charred band color
 
         QLinearGradient bandGrad( 0.0, -rCap, 0.0, rCap );
         bandGrad.setColorAt( 0.0,  c.lighter( 145 ) );
@@ -493,61 +415,7 @@ void Resistor::drawRealistic( QPainter* p )
         p->drawRect( QRectF( bandX[i] - bandW/2.0, -rCap - 1, bandW, (rCap + 1) * 2 ) );
     }
 
-    // 5. If burnt: render central scorch mark and fissure crack
-    if( m_isBurnt )
-    {
-        QRadialGradient scorch( 0.0, 0.0, L * 0.35 );
-        scorch.setColorAt( 0.0,  QColor( 10, 10, 10, 240 ) );
-        scorch.setColorAt( 0.45, QColor( 35, 20, 10, 190 ) );
-        scorch.setColorAt( 1.0,  QColor( 0, 0, 0, 0 ) );
-
-        p->setBrush( scorch );
-        p->setPen( Qt::NoPen );
-        p->drawEllipse( QPointF( 0.0, 0.0 ), L * 0.38, rCap * 1.15 );
-
-        // Charred fissure crack across center
-        QPen crackPen( QColor( 5, 5, 5, 230 ), 0.9 );
-        p->setPen( crackPen );
-        p->drawLine( QPointF( -L*0.12, -rCap*0.55 ), QPointF( -L*0.02, 0.0 ) );
-        p->drawLine( QPointF( -L*0.02, 0.0 ),        QPointF(  L*0.10, rCap*0.60 ) );
-
-        p->restore(); // restore clip from bodyPath
-
-        // 6. Draw educational warning banner above the resistor:
-        QString msg = "La resistencia se ha quemado por exceso de corriente";
-        QFont font = p->font();
-        font.setPointSizeF( 6.5 );
-        font.setBold( true );
-        p->setFont( font );
-
-        QFontMetrics fm( font );
-        int textW = fm.horizontalAdvance( msg );
-        double bannerW = textW + 12.0;
-        double bannerH = 15.0;
-        double bannerX = -bannerW / 2.0;
-        double bannerY = -rCap - 19.0;
-
-        // Warning banner box
-        p->setBrush( QColor( 195, 25, 25, 235 ) ); // Intense red warning
-        p->setPen( QPen( QColor( 255, 255, 255, 220 ), 0.8 ) );
-        p->drawRoundedRect( QRectF( bannerX, bannerY, bannerW, bannerH ), 3.0, 3.0 );
-
-        // Small indicator triangle pointing to the burned body
-        QPolygonF arrow;
-        arrow << QPointF( -3.0, bannerY + bannerH )
-              << QPointF(  3.0, bannerY + bannerH )
-              << QPointF(  0.0, bannerY + bannerH + 3.0 );
-        p->drawPolygon( arrow );
-
-        // Warning message text
-        p->setPen( QColor( 255, 255, 255 ) );
-        p->drawText( QRectF( bannerX, bannerY, bannerW, bannerH ), Qt::AlignCenter, msg );
-    }
-    else
-    {
-        p->restore(); // restore clip
-    }
-
+    p->restore(); // restore clip
     p->restore(); // restore painter state
 }
 

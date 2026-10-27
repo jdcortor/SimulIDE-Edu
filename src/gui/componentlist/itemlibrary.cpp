@@ -93,6 +93,7 @@
 #include "rectangle.h"
 #include "relay.h"
 #include "resistor.h"
+#include "ceramicresistor.h"
 #include "resistordip.h"
 #include "rtd.h"
 #include "scr.h"
@@ -179,6 +180,7 @@ void ItemLibrary::loadItems()
     addItem( new LibraryItem( QObject::tr("Passive"), "", "","Passive", nullptr ) );
     addItem( new LibraryItem( QObject::tr("Resistors"), "Passive", "resistors.png","Resistors", nullptr ) );
     addItem( Resistor::libraryItem() );
+    addItem( CeramicResistor::libraryItem() );
     addItem( ResistorDip::libraryItem() );
     addItem( Potentiometer::libraryItem() );
     addItem( VarResistor::libraryItem() );

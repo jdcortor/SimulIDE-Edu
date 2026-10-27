@@ -92,3 +92,34 @@ Este archivo guarda la **memoria histórica del proyecto**, los errores encontra
   * Al quemarse la resistencia por exceso de corriente, se dibuja un banner rojo intenso con texto en blanco en negrita: `"La resistencia se ha quemado por exceso de corriente"`, con flecha indicadora apuntando al cuerpo carbonizado.
   * Se expandió el área delimitadora (`m_area`) en `updateDimensions()` para que el motor gráfico de Qt repinte y limpie el banner sin dejar artefactos visuales en el lienzo.
 * **Compilación y Verificación:** Enlace y generación limpia de `Compilaciones/simulide.exe`.
+
+---
+
+## [2026-10-27] — Sesión 6: Depuración de Deadlock de Simulación, Purga de Burnt en Carbón y Creación del Resistor Cerámico de Potencia
+
+### 1. Diagnóstico del Congelamiento (AppHangB1 - Event ID 1002):
+* **Causa Raíz:** Se identificó que la llamada a modificaciones directas de `QGraphicsItem` (`prepareGeometryChange()`, redimensionado de pines y `update()`) invocadas dentro de callbacks de simulación del circuito o `updateStep()` generaban un interbloqueo (*deadlock*) con el hilo de cálculo de simulación en `QtConcurrent::run`. El hilo principal de la GUI quedaba esperando en `m_CircuitFuture.waitForFinished()` mientras el hilo de simulación intentaba adquirir el lock de la escena de Qt, provocando el cuelgue definitivo de la aplicación.
+* **Acción correctiva:** Se erradicó por completo la lógica de quemado de `e-resistor.h/cpp` y `resistor.h/cpp`. El cálculo MNA de la resistencia queda 100% limpio y lineal, eliminando toda posibilidad de interbloqueo.
+
+### 2. Hitos y Características Implementadas:
+* **Resistor de Carbón (`Carbon Resistor`):**
+  * Renombrado en la biblioteca de componentes a `tr("Carbon Resistor")`.
+  * Se preservó el cálculo y dibujo dinámico de 4, 5 y 6 bandas EIA fotorrealista.
+  * Menú desplegable para Tolerancia (`0.1 %` a `20 %`).
+  * Menú desplegable para TCR visible dinámicamente **únicamente** cuando se seleccionan 6 bandas.
+  * Escala física del cuerpo cilíndrico según potencia (1/8 W a 2 W).
+* **Nuevo Componente: Resistor Cerámico de Potencia (`CeramicResistor`):**
+  * Nueva clase `CeramicResistor` derivada de `Comp2Pin` y `eResistor`, registrada en la biblioteca bajo la categoría `Resistors`.
+  * Potencias normalizadas de disipación alta: `5 W, 7 W, 10 W, 15 W, 20 W, 25 W`.
+  * Tolerancias normalizadas con letras de código industrial EIA: `±1 % (F), ±2 % (G), ±5 % (J), ±10 % (K), ±20 % (M)`.
+  * Marcaje industrial serigrafiado en el cuerpo:
+    * Línea 1: Serie y potencia nominal (p. ej. `SQP 5W`, `SQP 10W`, `SQP 25W`).
+    * Línea 2: Resistencia y código de tolerancia con formato estándar (p. ej. `10Ω J`, `4R7 K`, `0R22 J`, `1K J`).
+  * Escalamiento paramétrico y separación de terminales:
+    * Tanto el bloque cerámico rectangular como la distancia entre pines terminales (`pinDistance`) crecen en función de la potencia seleccionada.
+    * La distancia de pines está alineada estrictamente con múltiplos de 8 píxeles (6 a 16 celdas de cuadrícula) para garantizar conexiones sin quiebres ni desalineaciones en el lienzo de circuitos.
+  * Renderizado fotorrealista de casing cerámico refractario marfil (`#F8F6F0`), biselado 3D, sombras de oclusión, terminales axiales metálicos y sellos de cemento oscuro.
+* **Compilación y Smoke Test:**
+  * Makefile regenerado mediante `qmake.exe`.
+  * Compilación y enlace exitosos con `mingw32-make.exe -j4`.
+  * Ejecutable verificado en ejecución en `Compilaciones/simulide.exe`.

@@ -28,8 +28,6 @@ class Resistor : public Comp2Pin, public eResistor
 
         void paint( QPainter* p, const QStyleOptionGraphicsItem* o, QWidget* w ) override;
 
-        void updateStep() override;
-
         void setResistance( double resist ) override;
 
         double powerRating() { return m_powerRating; }
@@ -55,11 +53,6 @@ class Resistor : public Comp2Pin, public eResistor
 
         bool realistic() { return m_realistic; }
         void setRealistic( bool r );
-
-        bool isBurnt() { return m_isBurnt; }
-        void setIsBurnt( bool b ) override;
-
-        void onBurned() override;
 
     protected:
         void slotProperties() override;

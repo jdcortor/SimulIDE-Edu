@@ -10,20 +10,25 @@
 - [x] **Configuración del Entorno de Compilación y Portabilidad:**
   - MSYS2 MinGW-w64 con GCC 16.2.0, Qt 5.15.19, `mingw-w64-x86_64-icu` 78 y `libwinpthread` 14.
   - Despliegue completo y autónomo en carpeta `Compilaciones/` con `windeployqt` y `resources/data`.
-- [x] **Implementación Nativa del Resistor Realista y Educativo:**
-  - Propiedades integradas: `Resistance` (Ω), `PowerRating` (W), `Tolerance` (lista desplegable con valores estándar: 0.1%, 0.25%, 0.5%, 1%, 2%, 5%, 10%, 20%), `Bands` (lista desplegable: 4, 5 o 6 bandas), `TCR` (ppm/K para la 6ª banda), `Realistic` (bool), `Burnt` (bool).
-  - Renderizador visual con `QPainter`: cuerpo cilíndrico cerámico con hombros redondeados en relieve 3D, soporte para 4, 5 y 6 bandas en tiempo real y textura carbonizada en caso de sobrecarga.
-  - Escala geométrica del cuerpo según potencia nominal ($1/8\text{ W}$, $1/4\text{ W}$, $1/2\text{ W}$, $1\text{ W}$, $2\text{ W}$).
-  - Física de sobrecarga eléctrica en `e-resistor.cpp` y `Resistor::updateStep()`: monitoreo en tiempo real acoplado a la lista de actualización del simulador (`addToUpdateList`), detección continua de $P = V^2/R > P_{\text{rated}}$, desconexión a circuito abierto ($1\,\text{G}\Omega$) y quemado visual instantáneo en vivo durante la simulación.
-- [x] **Compilación Exitosa:** Binario `Compilaciones/simulide.exe` compilado y actualizado al 100% sin errores.
+- [x] **Resistor de Carbón (Carbon Resistor):**
+  - Eliminación completa de la física/animación de quemado y banderas de advertencia para garantizar estabilidad absoluta y cero bloqueos (`AppHangB1`).
+  - Cálculo dinámico de 4, 5 y 6 bandas EIA con visualización cilíndrica 3D realista.
+  - Lista desplegable de tolerancias (0.1%, 0.25%, 0.5%, 1%, 2%, 5%, 10%, 20%).
+  - Coeficiente de temperatura (TCR) visible dinámicamente en el diálogo de propiedades solo cuando se eligen 6 bandas.
+  - Escala geométrica según potencia nominal (1/8 W a 2 W).
+- [x] **Resistencia de Cerámica de Alta Potencia (Ceramic Power Resistor):**
+  - Nueva clase `CeramicResistor` registrada en la paleta bajo "Resistors".
+  - Potencias elevadas: 5 W, 7 W, 10 W, 15 W, 20 W y 25 W.
+  - Tolerancias normalizadas con letras de código EIA: ±1 % (F), ±2 % (G), ±5 % (J), ±10 % (K), ±20 % (M).
+  - Impresión industrial estampada en el cuerpo cerámico: línea 1 con serie y potencia (`SQP 5W`, etc.) y línea 2 con valor y código de tolerancia (`10Ω J`, `4R7 K`, `0R22 J`).
+  - Escala paramétrica: tanto el bloque cerámico como la separación de los terminales axiales (`pinDistance`) se agrandan progresivamente con la potencia y respetan estrictamente la retícula (grid) de 8 px.
+  - Acabado visual fotorrealista con gradiente marfil refractario, biselado especular y sellos laterales de cemento oscuro.
+- [x] **Compilación y Smoke Test:** Binario `Compilaciones/simulide.exe` compilado y verificado en ejecución sin bloqueos.
 
 ---
 
 ## 🟡 En Progreso (In Progress)
-- [/] **Verificación Interactiva en Simulación:**
-  - Abrir `Compilaciones/simulide.exe`.
-  - Probar arrastrar la resistencia, cambiar valores de ohmios en el panel de propiedades y verificar el cambio de franjas de color.
-  - Probar conectar una fuente de alto voltaje para verificar el efecto de sobrecarga y quemado.
+- [ ] Verificación por parte del usuario de ambos resistores en el lienzo.
 
 ---
 

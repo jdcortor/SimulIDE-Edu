@@ -15,15 +15,9 @@ eResistor::eResistor( QString id )
     m_admit  = 1.0/100.0;
     m_current = 0;
     m_powerRating = 0.25; // 1/4 Watt standard
-    m_isBurnt = false;
     m_ePin.resize(2);
 }
 eResistor::~eResistor(){}
-
-void eResistor::initialize()
-{
-    setIsBurnt( false );
-}
 
 void eResistor::stamp()
 {
@@ -45,25 +39,7 @@ void eResistor::setResistance( double resist )
 {
     if( resist < 1e-12 ) resist = 1e-12;
     m_nominalResistance = resist;
-    if( !m_isBurnt )
-    {
-        setAdmit( 1/resist );
-    }
-}
-
-void eResistor::setIsBurnt( bool b )
-{
-    m_isBurnt = b;
-    if( m_isBurnt ) setAdmit( 0 ); // open circuit
-    else setAdmit( 1.0 / m_nominalResistance );
-}
-
-void eResistor::burnOut()
-{
-    if( m_isBurnt ) return;
-    m_isBurnt = true;
-    setAdmit( 0 ); // open circuit
-    onBurned();
+    setAdmit( 1.0 / resist );
 }
 
 void eResistor::setAdmit( double admit )   // Admit can be 0

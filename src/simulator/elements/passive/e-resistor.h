@@ -14,7 +14,6 @@ class eResistor : public eElement
         eResistor( QString id );
         virtual ~eResistor();
 
-        virtual void initialize() override;
         virtual void stamp() override;
 
         virtual double resistance() { return m_nominalResistance; }
@@ -31,18 +30,11 @@ class eResistor : public eElement
         double powerRating() { return m_powerRating; }
         virtual void setPowerRating( double p ) { m_powerRating = p; }
 
-        bool isBurnt() { return m_isBurnt; }
-        virtual void setIsBurnt( bool b );
-
-        virtual void burnOut();
-        virtual void onBurned() {;}
-
     protected:
         virtual void updateVI();
 
         double m_admit;
         double m_current;
         double m_powerRating;
-        bool   m_isBurnt;
         double m_nominalResistance;
 };
