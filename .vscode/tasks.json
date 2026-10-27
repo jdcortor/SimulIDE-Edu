@@ -2,33 +2,72 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "type": "cppbuild",
+            "label": "C/C++: g++.exe build active file",
+            "command": "C:/msys64/mingw64/bin/g++.exe",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-std=c++17",
+                "-g",
+                "${file}",
+                "-I", "C:/msys64/mingw64/include",
+                "-I", "C:/msys64/mingw64/include/QtCore",
+                "-I", "C:/msys64/mingw64/include/QtGui",
+                "-I", "C:/msys64/mingw64/include/QtWidgets",
+                "-L", "C:/msys64/mingw64/lib",
+                "-lQt5Widgets",
+                "-lQt5Gui",
+                "-lQt5Core",
+                "-o",
+                "${fileDirname}\\${fileBasenameNoExtension}.exe"
+            ],
+            "options": {
+                "cwd": "${fileDirname}",
+                "env": {
+                    "PATH": "C:\\msys64\\mingw64\\bin;C:\\msys64\\usr\\bin;C:\\Windows\\system32;C:\\Windows;${env:PATH}"
+                }
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Compilador g++ con librerías Qt5."
+        },
+        {
+            "label": "Previsualizar Resistencia Ceramica (Ejecutar)",
+            "type": "shell",
+            "command": "g++ -std=c++17 preview_ceramic.cpp -I C:/msys64/mingw64/include -I C:/msys64/mingw64/include/QtCore -I C:/msys64/mingw64/include/QtGui -I C:/msys64/mingw64/include/QtWidgets -L C:/msys64/mingw64/lib -lQt5Widgets -lQt5Gui -lQt5Core -o preview.exe && .\\preview.exe",
+            "options": {
+                "cwd": "${workspaceFolder}/sandbox",
+                "env": {
+                    "PATH": "C:\\msys64\\mingw64\\bin;C:\\msys64\\usr\\bin;C:\\Windows\\system32;C:\\Windows;${env:PATH}"
+                }
+            },
+            "group": "test",
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+        {
             "label": "Compilar SimulIDE Completo",
             "type": "shell",
             "command": "qmake SimulIDE_Build.pro && make -j4",
             "options": {
                 "cwd": "${workspaceFolder}/build_XX",
                 "env": {
-                    "PATH": "C:\\msys64\\mingw64\\bin;C:\\msys64\\usr\\bin;C:\\Windows\\system32;C:\\Windows;C:\\Windows\\System32\\WindowsPowerShell\\v1.0;${env:PATH}"
+                    "PATH": "C:\\msys64\\mingw64\\bin;C:\\msys64\\usr\\bin;C:\\Windows\\system32;C:\\Windows;${env:PATH}"
                 }
             },
             "group": {
                 "kind": "build",
-                "isDefault": true
+                "isDefault": false
             },
-            "problemMatcher": ["$gcc"]
-        },
-        {
-            "label": "Probar Sandbox (Matematica Resistor)",
-            "type": "shell",
-            "command": "g++ -std=c++17 test_math.cpp -o test_math.exe && .\\test_math.exe",
-            "options": {
-                "cwd": "${workspaceFolder}/sandbox",
-                "env": {
-                    "PATH": "C:\\msys64\\mingw64\\bin;C:\\msys64\\usr\\bin;C:\\Windows\\system32;C:\\Windows;C:\\Windows\\System32\\WindowsPowerShell\\v1.0;${env:PATH}"
-                }
-            },
-            "group": "test",
-            "problemMatcher": ["$gcc"]
+            "problemMatcher": [
+                "$gcc"
+            ]
         }
     ]
 }

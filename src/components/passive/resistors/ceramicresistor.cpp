@@ -156,10 +156,10 @@ QString CeramicResistor::formatValueCode( double R )
     }
     else if( R < 1000.0 )
     {
-        double rounded = std::round( R * 10.0 ) / 10.0;
-        if( std::abs( rounded - std::round( rounded ) ) < 0.01 )
-            return QString::number( static_cast<int>( rounded ) ) + "Ω";
-        return QString::number( rounded ) + "Ω";
+        int whole = static_cast<int>( std::floor( R ) );
+        int frac  = static_cast<int>( std::round( (R - whole) * 10.0 ) );
+        if( frac == 0 ) return QString( "%1R" ).arg( whole );
+        return QString( "%1R%2" ).arg( whole ).arg( frac );
     }
     else if( R < 1e6 )
     {
@@ -251,63 +251,48 @@ void CeramicResistor::drawRealistic( QPainter* p )
     double halfH = H / 2.0;
     double pinX  = m_pinDistance;
 
-    // 1. Draw shiny metallic axial lead wires
-    QPen wirePen( QColor( 185, 190, 195 ), 1.6, Qt::SolidLine, Qt::RoundCap );
+    // 1. Draw shiny metallic axial lead wires (only horizontal, black per user design)
+    QPen wirePen( QColor( 0, 0, 0 ), 1.8, Qt::SolidLine, Qt::RoundCap );
     p->setPen( wirePen );
     p->drawLine( QPointF( -pinX, 0.0 ), QPointF( -halfL, 0.0 ) );
     p->drawLine( QPointF(  halfL, 0.0 ), QPointF(  pinX, 0.0 ) );
 
-    // 2. Ceramic refractory cement body (rectangular block with beveled/rounded edges)
+    // 2. Ceramic refractory cement body (pure white ceramic with subtle 3D depth)
     QRectF bodyRect( -halfL, -halfH, L, H );
 
-    // Subtle 3D ceramic block shading (light comes from top-left)
     QLinearGradient blockGrad( 0.0, -halfH, 0.0, halfH );
-    blockGrad.setColorAt( 0.0,  QColor( 255, 255, 252 ) ); // Top white highlight
-    blockGrad.setColorAt( 0.12, QColor( 248, 246, 240 ) ); // Main ceramic ivory
-    blockGrad.setColorAt( 0.75, QColor( 236, 232, 222 ) );
-    blockGrad.setColorAt( 1.0,  QColor( 212, 206, 194 ) ); // Bottom ambient shadow
+    blockGrad.setColorAt( 0.0,  QColor( 255, 255, 255 ) );
+    blockGrad.setColorAt( 0.3,  QColor( 255, 255, 255 ) );
+    blockGrad.setColorAt( 0.85, QColor( 246, 247, 249 ) );
+    blockGrad.setColorAt( 1.0,  QColor( 232, 234, 238 ) ); // Suave sombra inferior
 
     p->setBrush( blockGrad );
-    p->setPen( QPen( QColor( 188, 182, 170 ), 0.9 ) );
-    p->drawRoundedRect( bodyRect, 2.5, 2.5 );
+    p->setPen( QPen( QColor( 160, 165, 172 ), 1.0 ) );
+    p->drawRoundedRect( bodyRect, 2.0, 2.0 );
 
-    // Top edge specular bevel highlight
-    p->setPen( QPen( QColor( 255, 255, 255, 220 ), 0.8 ) );
+    // Top edge highlight
+    p->setPen( QPen( QColor( 255, 255, 255 ), 0.8 ) );
     p->drawLine( QPointF( -halfL + 2.0, -halfH + 1.0 ), QPointF( halfL - 2.0, -halfH + 1.0 ) );
 
-    // Bottom edge shadow line
-    p->setPen( QPen( QColor( 170, 165, 150, 160 ), 0.8 ) );
+    // Bottom edge subtle shadow
+    p->setPen( QPen( QColor( 200, 204, 210, 180 ), 0.8 ) );
     p->drawLine( QPointF( -halfL + 2.0, halfH - 1.0 ), QPointF( halfL - 2.0, halfH - 1.0 ) );
 
-    // 3. Cement end seals (where the wire enters the ceramic tube/casing)
-    p->setBrush( QColor( 80, 75, 70 ) );
-    p->setPen( Qt::NoPen );
-    p->drawRoundedRect( QRectF( -halfL, -halfH * 0.45, 2.2, H * 0.9 ), 1.0, 1.0 );
-    p->drawRoundedRect( QRectF(  halfL - 2.2, -halfH * 0.45, 2.2, H * 0.9 ), 1.0, 1.0 );
-
-    // 4. Industrial stamped factory legend (Printed markings)
-    // Line 1: Type / Power rating (e.g., "SQP 5W" or "SQP 10W")
-    // Line 2: Resistance value and tolerance code (e.g., "10Ω J", "4R7 J", "100Ω K")
+    // 3. Industrial stamped factory legend (e.g. "5W47RJ")
     int ratedW = static_cast<int>( std::round( m_powerRating ) );
-    QString line1 = QString( "SQP %1W" ).arg( ratedW );
-    QString line2 = QString( "%1 %2" ).arg( formatValueCode( m_nominalResistance ) )
-                                       .arg( toleranceLetter( m_tolerance ) );
+    QString legend = QString( "%1W%2%3" ).arg( ratedW )
+                                         .arg( formatValueCode( m_nominalResistance ) )
+                                         .arg( toleranceLetter( m_tolerance ) );
 
     QFont font = p->font();
     font.setFamily( "Monospace" );
     font.setStyleHint( QFont::Monospace );
     font.setBold( true );
-    font.setPointSizeF( (H <= 16.0) ? 6.2 : 7.2 );
+    font.setPointSizeF( (H <= 16.0) ? 6.5 : 7.8 );
     p->setFont( font );
 
-    QFontMetrics fm( font );
-    int lineH = fm.height();
-    double textY1 = -lineH * 0.9;
-    double textY2 =  lineH * 0.1;
-
-    p->setPen( QColor( 35, 35, 35 ) ); // Dark industrial stamped ink
-    p->drawText( QRectF( -halfL + 3.0, textY1, L - 6.0, lineH ), Qt::AlignCenter, line1 );
-    p->drawText( QRectF( -halfL + 3.0, textY2, L - 6.0, lineH ), Qt::AlignCenter, line2 );
+    p->setPen( QColor( 25, 25, 25 ) ); // Tinta negra industrial estampada
+    p->drawText( bodyRect, Qt::AlignCenter, legend );
 
     p->restore();
 }

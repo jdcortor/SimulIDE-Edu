@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Previsualizador Resistencia Cerámica (HTML / Canvas)</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #1e1e24;
+            color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px;
+            margin: 0;
+        }
+        h2 { margin-top: 0; color: #61afef; }
+        .controls {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            background: #282c34;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            margin-bottom: 20px;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        label { font-size: 12px; color: #abb2bf; font-weight: bold; text-transform: uppercase; }
+        select, input {
+            background: #1e1e24;
+            color: #ffffff;
+            border: 1px solid #4b5263;
+            border-radius: 4px;
+            padding: 6px 10px;
+            font-size: 14px;
+        }
+        canvas {
+            background: #f2f4f8;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        }
+        .footer {
+            margin-top: 14px;
+            font-size: 13px;
+            color: #abb2bf;
+        }
+    </style>
+</head>
+<body>
+    <h2>Previsualizador Resistencia Cerámica (SimulIDE-Edu)</h2>
+
+    <div class="controls">
+        <div class="control-group">
+            <label>Potencia:</label>
+            <select id="selPower">
+                <option value="5" selected>5 W</option>
+                <option value="7">7 W</option>
+                <option value="10">10 W</option>
+                <option value="15">15 W</option>
+                <option value="20">20 W</option>
+                <option value="25">25 W</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label>Resistencia (Ω):</label>
+            <input type="number" id="inpRes" value="47" step="any" min="0.01">
+        </div>
+
+        <div class="control-group">
+            <label>Tolerancia:</label>
+            <select id="selTol">
+                <option value="1">±1 % (F)</option>
+                <option value="2">±2 % (G)</option>
+                <option value="5" selected>±5 % (J)</option>
+                <option value="10">±10 % (K)</option>
+                <option value="20">±20 % (M)</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label>Zoom:</label>
+            <select id="selZoom">
+                <option value="2">2x</option>
+                <option value="3" selected>3x</option>
+                <option value="4">4x</option>
+                <option value="5">5x</option>
+            </select>
+        </div>
+    </div>
+
+    <canvas id="cv" width="640" height="320"></canvas>
+    <div class="footer">Terminales exclusivamente axiales horizontales sobre la retícula de SimulIDE. Formato: <b>5W47RJ</b></div>
+
+    <script>
+        const cv = document.getElementById('cv');
+        const ctx = cv.getContext('2d');
+
+        function toleranceLetter(tol) {
+            if (Math.abs(tol - 1.0) < 0.25) return "F";
+            if (Math.abs(tol - 2.0) < 0.25) return "G";
+            if (Math.abs(tol - 5.0) < 1.0)  return "J";
+            if (Math.abs(tol - 10.0) < 2.0) return "K";
+            if (Math.abs(tol - 20.0) < 3.0) return "M";
+            return "J";
+        }
+
+        function formatValueCode(R) {
+            if (R <= 0) return "0R";
+            if (R < 1.0) {
+                const cents = Math.round(R * 100);
+                return "0R" + String(cents).padStart(2, '0');
+            } else if (R < 10.0) {
+                const whole = Math.floor(R);
+                const frac = Math.round((R - whole) * 10);
+                return frac === 0 ? whole + "R" : whole + "R" + frac;
+            } else if (R < 1000.0) {
+                const whole = Math.floor(R);
+                const frac = Math.round((R - whole) * 10);
+                return frac === 0 ? whole + "R" : whole + "R" + frac;
+            } else if (R < 1e6) {
+                const k = R / 1000.0;
+                const whole = Math.floor(k);
+                const frac = Math.round((k - whole) * 10);
+                return frac === 0 ? whole + "K" : whole + "K" + frac;
+            } else {
+                const m = R / 1e6;
+                const whole = Math.floor(m);
+                const frac = Math.round((m - whole) * 10);
+                return frac === 0 ? whole + "M" : whole + "M" + frac;
+            }
+        }
+
+        function draw() {
+            const power = parseFloat(document.getElementById('selPower').value);
+            const resistance = parseFloat(document.getElementById('inpRes').value) || 47.0;
+            const tol = parseFloat(document.getElementById('selTol').value);
+            const zoom = parseFloat(document.getElementById('selZoom').value);
+
+            let L = 34.0, H = 16.0, pinDist = 24.0;
+            if (power <= 5.0)       { L = 34.0; H = 16.0; pinDist = 24.0; }
+            else if (power <= 7.0)  { L = 44.0; H = 17.0; pinDist = 32.0; }
+            else if (power <= 10.0) { L = 52.0; H = 18.0; pinDist = 40.0; }
+            else if (power <= 15.0) { L = 62.0; H = 20.0; pinDist = 48.0; }
+            else if (power <= 20.0) { L = 72.0; H = 22.0; pinDist = 56.0; }
+            else                    { L = 84.0; H = 24.0; pinDist = 64.0; }
+
+            ctx.clearRect(0, 0, cv.width, cv.height);
+            const cx = cv.width / 2;
+            const cy = cv.height / 2;
+
+            // Retícula 8px SimulIDE
+            ctx.strokeStyle = '#d7dce4';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([2, 4]);
+            const step = 8.0 * zoom;
+            for (let x = cx; x < cv.width; x += step) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, cv.height); ctx.stroke(); }
+            for (let x = cx; x > 0; x -= step) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, cv.height); ctx.stroke(); }
+            for (let y = cy; y < cv.height; y += step) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(cv.width, y); ctx.stroke(); }
+            for (let y = cy; y > 0; y -= step) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(cv.width, y); ctx.stroke(); }
+            ctx.setLineDash([]);
+
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.scale(zoom, zoom);
+
+            const halfL = L / 2.0;
+            const halfH = H / 2.0;
+
+            // Terminales axiales metálicos (solo horizontales)
+            ctx.strokeStyle = '#aab0b6';
+            ctx.lineWidth = 1.8;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(-pinDist, 0); ctx.lineTo(-halfL, 0);
+            ctx.moveTo(halfL, 0); ctx.lineTo(pinDist, 0);
+            ctx.stroke();
+
+            // Bloque cerámico (blanco puro)
+            const grad = ctx.createLinearGradient(0, -halfH, 0, halfH);
+            grad.addColorStop(0.0, '#ffffff');
+            grad.addColorStop(0.3, '#ffffff');
+            grad.addColorStop(0.85, '#f6f7f9');
+            grad.addColorStop(1.0, '#e8eaee');
+
+            ctx.fillStyle = grad;
+            ctx.strokeStyle = '#a0a5ac';
+            ctx.lineWidth = 1.0;
+            ctx.beginPath();
+            ctx.roundRect(-halfL, -halfH, L, H, 2.0);
+            ctx.fill();
+            ctx.stroke();
+
+            // Bisel superior
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 0.8;
+            ctx.beginPath();
+            ctx.moveTo(-halfL + 2, -halfH + 1);
+            ctx.lineTo(halfL - 2, -halfH + 1);
+            ctx.stroke();
+
+            // Sombra inferior
+            ctx.strokeStyle = 'rgba(200, 204, 210, 0.7)';
+            ctx.lineWidth = 0.8;
+            ctx.beginPath();
+            ctx.moveTo(-halfL + 2, halfH - 1);
+            ctx.lineTo(halfL - 2, halfH - 1);
+            ctx.stroke();
+
+            // Leyenda estampada única centrada (ej: 5W47RJ)
+            ctx.fillStyle = '#191919';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            const fontSize = (H <= 16.0) ? 6.5 : 7.8;
+            ctx.font = `bold ${fontSize}px monospace`;
+
+            const legend = `${Math.round(power)}W${formatValueCode(resistance)}${toleranceLetter(tol)}`;
+            ctx.fillText(legend, 0, 0.5);
+
+            ctx.restore();
+        }
+
+        document.getElementById('selPower').addEventListener('change', draw);
+        document.getElementById('inpRes').addEventListener('input', draw);
+        document.getElementById('selTol').addEventListener('change', draw);
+        document.getElementById('selZoom').addEventListener('change', draw);
+        draw();
+    </script>
+</body>
+</html>

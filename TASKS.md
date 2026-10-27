@@ -20,10 +20,15 @@
   - Nueva clase `CeramicResistor` registrada en la paleta bajo "Resistors".
   - Potencias elevadas: 5 W, 7 W, 10 W, 15 W, 20 W y 25 W.
   - Tolerancias normalizadas con letras de código EIA: ±1 % (F), ±2 % (G), ±5 % (J), ±10 % (K), ±20 % (M).
-  - Impresión industrial estampada en el cuerpo cerámico: línea 1 con serie y potencia (`SQP 5W`, etc.) y línea 2 con valor y código de tolerancia (`10Ω J`, `4R7 K`, `0R22 J`).
-  - Escala paramétrica: tanto el bloque cerámico como la separación de los terminales axiales (`pinDistance`) se agrandan progresivamente con la potencia y respetan estrictamente la retícula (grid) de 8 px.
-  - Acabado visual fotorrealista con gradiente marfil refractario, biselado especular y sellos laterales de cemento oscuro.
-- [x] **Compilación y Smoke Test:** Binario `Compilaciones/simulide.exe` compilado y verificado en ejecución sin bloqueos.
+  - Impresión industrial compacta de una sola línea: potencia + valor + letra de tolerancia (ej: `5W47RJ`, `10W10RJ`, `25W0R22J`).
+  - Terminales axiales horizontales de color negro (`#000000`) alineados a la retícula de 8 px.
+  - Casing cerámico rectangular blanco puro con gradiente suave 3D y bordes nítidos.
+- [x] **Preparación del Entorno Sandbox y VSCode para Nuevos Componentes:**
+  - Configuración completa de `.vscode/c_cpp_properties.json`, `.vscode/tasks.json`, `.vscode/launch.json` y `.vscode/settings.json`.
+  - Instalación y verificación del depurador `gdb.exe` para compilación y depuración con `F5` o botón de Play en 1 segundo.
+  - Creación de `sandbox/template_element.cpp`: plantilla lista para diseñar visualmente cualquier nuevo componente con retícula, zoom y controles interactivos.
+  - `sandbox/run_preview.bat`: lanzador directo de 1 clic para previsualización.
+- [x] **Compilación Exitosa de SimulIDE:** Binario `Compilaciones/simulide.exe` compilado y actualizado al 100%.
 
 ---
 

@@ -1,0 +1,32 @@
+{
+    "configurations": [
+        {
+            "name": "MinGW64",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "C:/msys64/mingw64/include",
+                "C:/msys64/mingw64/include/QtCore",
+                "C:/msys64/mingw64/include/QtGui",
+                "C:/msys64/mingw64/include/QtWidgets",
+                "C:/msys64/mingw64/include/QtSvg",
+                "C:/msys64/mingw64/include/QtXml",
+                "C:/msys64/mingw64/include/QtConcurrent",
+                "C:/msys64/mingw64/include/QtNetwork",
+                "C:/msys64/mingw64/include/QtSerialPort",
+                "C:/msys64/mingw64/include/**"
+            ],
+            "defines": [
+                "UNICODE",
+                "_UNICODE",
+                "QT_CORE_LIB",
+                "QT_GUI_LIB",
+                "QT_WIDGETS_LIB"
+            ],
+            "compilerPath": "C:/msys64/mingw64/bin/g++.exe",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "windows-gcc-x64"
+        }
+    ],
+    "version": 4
+}

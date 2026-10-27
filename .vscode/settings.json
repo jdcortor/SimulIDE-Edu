@@ -1,0 +1,23 @@
+{
+    "C_Cpp.default.compilerPath": "C:/msys64/mingw64/bin/g++.exe",
+    "C_Cpp.default.cStandard": "c17",
+    "C_Cpp.default.cppStandard": "c++17",
+    "C_Cpp.default.includePath": [
+        "${workspaceFolder}/**",
+        "C:/msys64/mingw64/include",
+        "C:/msys64/mingw64/include/QtCore",
+        "C:/msys64/mingw64/include/QtGui",
+        "C:/msys64/mingw64/include/QtWidgets",
+        "C:/msys64/mingw64/include/QtSvg",
+        "C:/msys64/mingw64/include/QtXml",
+        "C:/msys64/mingw64/include/QtConcurrent",
+        "C:/msys64/mingw64/include/QtNetwork",
+        "C:/msys64/mingw64/include/QtSerialPort",
+        "C:/msys64/mingw64/include/**"
+    ],
+    "code-runner.executorMap": {
+        "cpp": "cd $dir && g++ -std=c++17 $fileName -I C:/msys64/mingw64/include -I C:/msys64/mingw64/include/QtCore -I C:/msys64/mingw64/include/QtGui -I C:/msys64/mingw64/include/QtWidgets -L C:/msys64/mingw64/lib -lQt5Widgets -lQt5Gui -lQt5Core -o $fileNameWithoutExt.exe && .\\$fileNameWithoutExt.exe"
+    },
+    "code-runner.runInTerminal": true,
+    "code-runner.saveFileBeforeRun": true
+}

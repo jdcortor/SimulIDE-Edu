@@ -123,3 +123,27 @@ Este archivo guarda la **memoria histórica del proyecto**, los errores encontra
   * Makefile regenerado mediante `qmake.exe`.
   * Compilación y enlace exitosos con `mingw32-make.exe -j4`.
   * Ejecutable verificado en ejecución en `Compilaciones/simulide.exe`.
+
+---
+
+## [2026-10-27] — Sesión 7: Refinamiento Estético del Resistor Cerámico y Preparación del Sandbox para Nuevos Componentes
+
+### 1. Refinamiento Estético de `CeramicResistor`:
+* **Terminales axiales en negro:** Se adoptó `QPen(QColor(0, 0, 0), 1.8)` para los cables terminales exclusivamente horizontales.
+* **Cuerpo cerámico blanco puro:** Gradiente blanco nítido (`#FFFFFF` a `#E8EAEE`) con bisel especular superior y sombra inferior sutil.
+* **Marcaje compacto de una línea:** Formato industrial unificado `Potencia + Valor + Tolerancia` (p. ej. `5W47RJ`, `10W10RJ`, `25W0R22J`) centrado horizontal y verticalmente en el cuerpo cerámico.
+* **Eliminación de sellos laterales:** Eliminadas las barras oscuras verticales de los extremos que se confundían con terminales.
+
+### 2. Infraestructura de Sandbox y VSCode para Prototipado Rápido:
+* **Configuración VSCode C/C++:**
+  * `.vscode/c_cpp_properties.json`: Inclusión de cabeceras de Qt5 (`QtCore`, `QtGui`, `QtWidgets`) para eliminar errores de IntelliSense.
+  * `.vscode/tasks.json`: Tarea oficial `cppbuild` con `g++` y Qt5 para compilar en 1 segundo.
+  * `.vscode/launch.json`: Configuración de ejecución y depuración con `F5`.
+  * `.vscode/settings.json`: Integración con la extensión Code Runner.
+* **Instalación de herramientas:** Instalado `mingw-w64-x86_64-gdb` en MSYS2 para depuración nativa en VSCode sin errores de `miDebuggerPath`.
+* **Plantilla para futuros componentes (`sandbox/template_element.cpp`):**
+  * Código base modular con ventana interactiva, retícula de 8 px de SimulIDE, selector de zoom (1x a 5x) y controles de parámetros para diseñar cualquier nuevo componente al instante antes de llevarlo a `src/`.
+  * Script `sandbox/run_preview.bat` y prototipo web `sandbox/preview_ceramic.html`.
+
+### 3. Compilación de SimulIDE:
+* Enlace exitoso y generación del ejecutable definitivo en `Compilaciones/simulide.exe`.
