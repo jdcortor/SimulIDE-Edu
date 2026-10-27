@@ -16,7 +16,6 @@ class eResistor : public eElement
 
         virtual void initialize() override;
         virtual void stamp() override;
-        virtual void voltChanged() override;
 
         virtual double resistance() { return m_nominalResistance; }
         virtual void setResistance( double resist );

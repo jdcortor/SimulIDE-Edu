@@ -94,6 +94,7 @@ void Resistor::slotProperties()
 void Resistor::updateStep()
 {
     if( m_isBurnt ) return;
+    if( !Simulator::self() || !Simulator::self()->isRunning() ) return;
     if( !m_pin[0] || !m_pin[1] ) return;
     if( !m_pin[0]->isConnected() || !m_pin[1]->isConnected() ) return;
 
@@ -102,6 +103,7 @@ void Resistor::updateStep()
 
     if( m_powerRating > 0.0 && power > m_powerRating )
     {
+        qDebug() << "Resistor" << m_id << "burned out! Power:" << power << "W > Rated:" << m_powerRating << "W";
         burnOut();
     }
 }
@@ -367,8 +369,11 @@ void Resistor::updateDimensions()
     {
         double pinLen = 16.0 - halfL;
         if( pinLen < 2.0 ) pinLen = 2.0;
-        m_pin[0]->setLength( pinLen );
-        m_pin[1]->setLength( pinLen );
+        if( std::abs( m_pin[0]->length() - pinLen ) > 0.01 )
+        {
+            m_pin[0]->setLength( pinLen );
+            m_pin[1]->setLength( pinLen );
+        }
     }
 }
 
