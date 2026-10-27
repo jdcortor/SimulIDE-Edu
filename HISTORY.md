@@ -38,3 +38,57 @@ Este archivo guarda la **memoria histórica del proyecto**, los errores encontra
   * Instalación de `mingw-w64-x86_64-make` y creación de alias `make.exe` y wrapper `move` para compatibilidad multiplataforma en `SimulIDE.pri`.
 * Configuración de la tarea de compilación en [`.vscode/tasks.json`](file:///C:/Users/usuario/Desktop/SimulIDE-Edu/.vscode/tasks.json).
 * **Compilación completa y exitosa de SimulIDE:** binario generado en `build_XX/executables/SimulIDE_2.0.0-/simulide.exe` (9.28 MB).
+
+---
+
+## [2026-10-27] — Sesión 3: Implementación del Resistor Realista y Mecanismo de Sobrecarga
+
+### 1. Hitos Alcanzados:
+* **Punto de Control Seguro:** Creación de commit `5e1d59c0` y Git tag permanente `checkpoint-pre-resistor`.
+* **Física del Resistor (`e-resistor.h` / `e-resistor.cpp`):**
+  * Incorporación de `m_powerRating` ($P_{\text{rated}}$) y estado `m_isBurnt`.
+  * Implementación de `voltChanged()`: cálculo en tiempo real de potencia disipada $P = V \cdot I$.
+  * Lógica de sobrecarga: si $P > P_{\text{rated}}$, se invoca `burnOut()`, ajustando la admitancia a $10^{-9}\,\text{S}$ (circuito abierto de $1\,\text{G}\Omega$) y notificando a la vista gráfica.
+* **Componente Visual Realista (`resistor.h` / `resistor.cpp`):**
+  * Exposición de propiedades en el panel de control: `Resistance`, `PowerRating`, `Tolerance`, `Bands` (4 o 5), `Realistic` (bool), `Burnt` (bool).
+  * Renderizado `QPainterPath` con relieve 3D: hombros y extremos abultados estilo axial clásico ("dogbone"), gradiente de iluminación cilíndrico y terminales metálicos ajustados.
+  * Bandas de colores dinámicas calculadas automáticamente en tiempo real según el código de colores EIA.
+  * Textura carbonizada de quemado con degradado radial y fisura central cuando se detecta sobrecarga.
+  * Escala geométrica del cuerpo según la potencia seleccionada ($1/8\text{ W}$ a $2\text{ W}$).
+* **Compilación y Despliegue:** Binario generado y enlazado directamente en `Compilaciones/simulide.exe`.
+
+---
+
+## [2026-10-27] — Sesión 4: Detección Continua de Sobrecarga, 6 Bandas y Tolerancia Desplegable
+
+### 1. Hitos Alcanzados:
+* **Detección de Sobrecarga Continua en Simulación:**
+  * Se conectó `Resistor` al bucle de actualización periódica del simulador mediante `Simulator::self()->addToUpdateList( this )`.
+  * Se implementó `updateStep()` para calcular la disipación en cada tick de simulación: $P = V^2 \cdot G$. Si $P > P_{\text{rated}}$, se invoca de inmediato `burnOut()`, abriendo el circuito en la matriz MNA y mostrando la textura quemada.
+  * Se registraron los callbacks de nodo con `m_ePin[0]->changeCallBack( this )` en `stamp()`.
+* **Soporte para Resistencias de 6 Bandas (EIA-96):**
+  * Se integró la 6ª banda para el coeficiente de temperatura de resistencia (TCR en ppm/K).
+  * Menú desplegable para TCR (100 ppm marrón, 50 ppm rojo, 25 ppm amarillo, 15 ppm naranja, 10 ppm azul, 5 ppm violeta).
+  * El color de fondo del cuerpo adopta un tono azul-índigo (`#788CD7`) característico de componentes de alta precisión.
+* **Tolerancia y Bandas en Listas Desplegables (Enum):**
+  * La tolerancia ahora es una lista desplegable (`StrProp` enum) con valores normalizados: `0.1 %`, `0.25 %`, `0.5 %`, `1 %`, `2 %`, `5 %`, `10 %`, `20 %`.
+  * La selección de bandas ahora es un selector desplegable: `4 Bands`, `5 Bands`, `6 Bands`.
+* **Compilación Exitosa:** Compilado al 100% en `Compilaciones/simulide.exe`.
+
+---
+
+## [2026-10-27] — Sesión 5: Coeficiente de Temperatura Condicional, Eliminación de Burnt Manual, Reseteo Automático y Banner de Advertencia
+
+### 1. Hitos Alcanzados:
+* **Coeficiente de Temperatura (TCR) Exclusivo para 6 Bandas:**
+  * Se sobreescribió `slotProperties()` en `Resistor` para invocar `m_propDialog->showProp("TCR", m_bands == 6)`.
+  * Se vinculó el cambio dinámico en `setBands()` y `setBandsStr()` junto a `m_propDialog->adjustWidgets()` para que el campo aparezca u oculte automáticamente adaptando el alto del diálogo sin reiniciar la ventana.
+* **Eliminación del Atributo Manual `Burnt`:**
+  * Se retiró `Burnt` del grupo de propiedades de la GUI. La condición de quemado ahora ocurre de forma puramente física por sobrecarga eléctrica en la simulación.
+* **Reinicio Automático del Estado de Quemado:**
+  * Se implementó `initialize()` en `eResistor` invocando `setIsBurnt(false)` en cada parada o reinicio de la simulación (`Simulator::startSim()` y `Simulator::stopSim()`).
+  * Al reiniciar la simulación o modificar la resistencia/potencia, la resistencia recupera su aspecto original, restaura su conductancia y remueve la advertencia.
+* **Mensaje Educativo de Advertencia:**
+  * Al quemarse la resistencia por exceso de corriente, se dibuja un banner rojo intenso con texto en blanco en negrita: `"La resistencia se ha quemado por exceso de corriente"`, con flecha indicadora apuntando al cuerpo carbonizado.
+  * Se expandió el área delimitadora (`m_area`) en `updateDimensions()` para que el motor gráfico de Qt repinte y limpie el banner sin dejar artefactos visuales en el lienzo.
+* **Compilación y Verificación:** Enlace y generación limpia de `Compilaciones/simulide.exe`.

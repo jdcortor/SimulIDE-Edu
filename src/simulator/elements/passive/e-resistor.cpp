@@ -1,7 +1,8 @@
 /***************************************************************************
  *   Copyright (C) 2012 by Santiago González                               *
  *                                                                         *
- ***( see copyright.txt file at root folder )*******************************/
+ *   ( see copyright.txt file at root folder )                             *
+ ***************************************************************************/
 
 #include "e-resistor.h"
 #include "simulator.h"
@@ -10,22 +11,32 @@
 eResistor::eResistor( QString id )
          : eElement( id )
 {
+    m_nominalResistance = 100.0;
     m_admit  = 1.0/100.0;
     m_current = 0;
+    m_powerRating = 0.25; // 1/4 Watt standard
+    m_isBurnt = false;
     m_ePin.resize(2);
 }
 eResistor::~eResistor(){}
+
+void eResistor::initialize()
+{
+    setIsBurnt( false );
+}
 
 void eResistor::stamp()
 {
     m_ePin[0]->setEnodeComp( m_ePin[1]->getEnode() );
     m_ePin[1]->setEnodeComp( m_ePin[0]->getEnode() );
     stampAdmit();
+    m_ePin[0]->changeCallBack( this );
+    m_ePin[1]->changeCallBack( this );
 }
 
 void eResistor::stampAdmit()
 {
-    if( !m_ePin[0] ) return;
+    if( !m_ePin[0] || !m_ePin[1] ) return;
     if( !m_ePin[0]->isConnected() || !m_ePin[1]->isConnected() ) return;
 
     m_ePin[0]->stampAdmitance( m_admit );
@@ -35,7 +46,41 @@ void eResistor::stampAdmit()
 void eResistor::setResistance( double resist )
 {
     if( resist < 1e-12 ) resist = 1e-12;
-    setAdmit( 1/resist );
+    m_nominalResistance = resist;
+    if( !m_isBurnt )
+    {
+        setAdmit( 1/resist );
+    }
+}
+
+void eResistor::setIsBurnt( bool b )
+{
+    m_isBurnt = b;
+    if( m_isBurnt ) setAdmit( 1e-9 ); // ~1 Gigaohm (open circuit)
+    else setAdmit( 1.0 / m_nominalResistance );
+}
+
+void eResistor::burnOut()
+{
+    if( m_isBurnt ) return;
+    m_isBurnt = true;
+    setAdmit( 1e-9 ); // open circuit
+    onBurned();
+}
+
+void eResistor::voltChanged()
+{
+    if( m_isBurnt ) return;
+    if( !m_ePin[0] || !m_ePin[1] ) return;
+    if( !m_ePin[0]->isConnected() || !m_ePin[1]->isConnected() ) return;
+
+    double volt = m_ePin[0]->getVoltage() - m_ePin[1]->getVoltage();
+    m_current = volt * m_admit;
+    double power = volt * m_current;
+    if( m_powerRating > 0.0 && power > m_powerRating )
+    {
+        burnOut();
+    }
 }
 
 void eResistor::setAdmit( double admit )   // Admit can be 0
@@ -66,4 +111,3 @@ void eResistor::updateVI()
     }
     else m_current = 0;
 }
-
